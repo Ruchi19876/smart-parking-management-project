@@ -1,0 +1,87 @@
+<html>
+<head>
+<title>Parking Management System</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script language="javascript">
+	function validate(formObj)
+	{
+	if(formObj.t2.value.length==0)
+	{
+	alert("Please Enter Amount");
+	formObj.t2.focus();
+	return false;
+	}
+	if(formObj.t3.value.length==0)
+	{
+	alert("Please Enter Tax");
+	formObj.t3.focus();
+	return false;
+	}
+	
+	if(formObj.t5.value.length==0)
+	{
+	alert("Please Enter Card or Cheque Details");
+	formObj.t5.focus();
+	return false;
+	}
+	return true;
+	}
+	</script>
+</head>
+<body>
+<div class="main">
+  <div class="main_resize">
+    <div class="header">
+      <div class="logo">
+        <h1><span>Parking Management System</span><small></small></h1>
+      </div>
+    </div>
+    <div class="content">
+      <div class="content_bg">
+        <div class="menu_nav">
+          <ul>
+      <li><a href="ResidentProfileUpdate">Profile Update</a></li>
+	   <li><a href="ResidentAddVehicle">Add New Vehicles</a></li>
+	   <li><a href="ResidentUpdateVehicle">Update Vehicles</a></li>
+	    <li><a href="ResidentComplaints">Complaints</a></li>
+	    <li><a href="ResidentCharges">Charges</a></li>
+      <li><a href="index">Logout</a></li>
+   </ul>
+        </div>
+        <div class="hbg"><img src="{{ url_for('static', filename='images/header_images.jpg') }}" width="915" height="286" alt="" /></div>
+      				<center>
+<form name ="f1" method="post" action="/ResidentPayBillAction" onsubmit="return validate(this);">
+<br/>
+   <h2><b>Parking Payment Page</b></h2>
+   
+	<font size="" color="red"><center>{{ output|safe }}</center></font>
+						
+						<table align="center" width="30%" >
+
+						{{ bill|safe }}			 
+         
+		  <tr><td><font size='' color="black">Amount</b></td><td><input name="t2" type="text" size="15"></td></tr>
+
+			<tr><td><font size='' color="black">Tax</b></td>
+			<td><input name="t3" type="Text" size="15"></td></td></tr>
+
+		    <tr><td><font size='' color="black">Payment&nbsp;Mode</b></td>
+			<td><select name="t4">
+			<option value="Card">Card</option>
+			<option value="Cheque">Cheque</option>
+			</select>
+			</td></td></tr>
+
+<tr><td><font size='' color="black">Cheque/Card&nbsp;Details</b></td>
+			<td><input name="t5" type="Text" size="45" ></td></td></tr>
+		    
+			<tr><td></td><td><input type="submit" value="Submit"></td>
+			</table>
+				</div>	
+					
+				</div>
+				
+					
+	</body>
+</html>

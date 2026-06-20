@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>Parking Management System</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script language="javascript">
+	function validate(formObj)
+	{
+	if(formObj.t2.value.length==0)
+	{
+	alert("Please Enter vehicle number");
+	formObj.t2.focus();
+	return false;
+	}
+	if(formObj.t3.value.length==0)
+	{
+	alert("Please Enter vehicle name");
+	formObj.t3.focus();
+	return false;
+	}
+	
+	if(formObj.t4.value.length==0)
+	{
+	alert("Please Enter vehicle model");
+	formObj.t4.focus();
+	return false;
+	}
+	return true;
+	}
+	</script>
+</head>
+<body>
+<div class="main">
+  <div class="main_resize">
+    <div class="header">
+      <div class="logo">
+        <h1><span>Parking Management System</span><small></small></h1>
+      </div>
+    </div>
+    <div class="content">
+      <div class="content_bg">
+        <div class="menu_nav">
+          <ul>
+      <li><a href="AdminProfileUpdate">Profile Update</a></li>
+	   <li><a href="ResidentModule">Add Residents</a></li>
+	   <li><a href="VehicleModule">Add Vehicles</a></li>
+	   <li><a href="ParkingModule">Add Parking Slot</a></li>
+	   <li><a href="Complaints">Complaints</a></li>
+	   <li><a href="UpdateStatus">Update Status</a></li>
+	   <li><a href="Charges">Charges</a></li>
+      <li><a href="index">Logout</a></li>
+   </ul>
+        </div>
+        <div class="hbg"><img src="{{ url_for('static', filename='images/header_images.jpg') }}" width="915" height="286" alt="" /></div>
+      				<center>
+<form name ="f1" method="post" action="/ComplaintsAction" onsubmit="return validate(this);">
+<br/>
+   <h2><b>Add New Vehicle Page</b></h2>
+   
+	<font size="" color="red"><center>{{ output|safe }}</center></font>
+						
+						<table align="center" width="30%" >
+
+						{{ rid|safe }}			 
+         
+		  <tr><td><font size='' color="black">Vehicle&nbsp;No</b></td><td><input name="t2" type="text" size="15"></td></tr>
+
+			<tr><td><font size='' color="black">Vehicle&nbsp;Name</b></td>
+			<td><input name="t3" type="Text" size="35"></td></td></tr>
+
+		    <tr><td><font size='' color="black">Model</b></td>
+			<td><input name="t4" type="Text" size="35"></td></td></tr>
+
+		    
+			<tr><td></td><td><input type="submit" value="Submit"></td>
+			</table>
+				</div>	
+					
+				</div>
+				
+					
+	</body>
+</html>

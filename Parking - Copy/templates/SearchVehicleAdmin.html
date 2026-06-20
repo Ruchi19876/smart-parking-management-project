@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>Parking Management System</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script language="javascript">
+	function validate(formObj)
+	{
+	if(formObj.t1.value.length==0)
+	{
+	alert("Please Enter Search String");
+	formObj.t1.focus();
+	return false;
+	}
+	if(formObj.t2.value.length==0)
+	{
+	alert("Please Enter password");
+	formObj.t2.focus();
+	return false;
+	}
+	return true;
+	}
+	</script>
+</head>
+<body>
+<div class="main">
+  <div class="main_resize">
+    <div class="header">
+      <div class="logo">
+        <h1><span>Parking Management System</span><small></small></h1>
+      </div>
+    </div>
+    <div class="content">
+      <div class="content_bg">
+        <div class="menu_nav">
+          <ul>
+      <li><a href="AddVehicle">Add New Vehicle</a></li>
+	   <li><a href="UpdateVehicleDetails">Update Vehicle Details</a></li>
+	    <li><a href="SearchVehicleAdmin">Search Vehicle</a></li>
+      <li><a href="AdminPage">Back</a></li>
+   </ul>
+        </div>
+        <div class="hbg"><img src="{{ url_for('static', filename='images/header_images.jpg') }}" width="915" height="286" alt="" /></div>
+      				<center>
+<form name ="f1" method="post" action="/SearchVehicleAdminAction" onsubmit="return validate(this);">
+<br/>
+   <h2><b>Search Vehicle Page</b></h2>
+   
+	<font size="" color="red"><center>{{ output|safe }}</center></font>
+						
+						<table align="center" width="30%" >
+			 <tr><td><font size='' color="black">Search&nbsp;String</b></td>
+			 <td><input type="text" name="t1" style="font-family: Comic Sans MS" size="30"></td></tr>
+         
+		  <tr><td><font size='' color="black">Search&nbsp;By</b></td><td><select name="t2">
+		  <option value="vehicle_no">Vehicle No</option>
+		  <option value="vehicle_name">Vehicle Name</option>
+		  </select>
+		  </td></tr>
+
+				 
+			<tr><td></td><td><input type="submit" value="Submit"></td>
+			</table>
+				</div>	
+					
+				</div>
+				
+					
+	</body>
+</html>

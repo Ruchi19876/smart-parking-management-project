@@ -1,0 +1,47 @@
+create database parking;
+use parking;
+
+create table admin(username varchar(30) primary key,
+password varchar(30),
+contact_no varchar(12),
+email  varchar(30),
+address  varchar(30));
+
+insert into admin values('admin', 'admin', '9998887776', 'admin@gmail.com', 'India');
+commit;
+
+create table addresident(resident_id int primary key,
+floor_no varchar(20),
+door_no varchar(20),
+resident_name varchar(50),
+contact_no varchar(20),
+email varchar(50),
+aadhar_card varchar(25),
+status varchar(30));
+
+create table addvehicle(vehicle_id int primary key,
+resident_id varchar(30),
+vehicle_no varchar(50),
+vehicle_name varchar(50),
+vehicle_model varchar(50));
+
+create table parkingslot(parking_id int primary key,
+resident_id varchar(30),
+vehicle_no varchar(40),
+parking_slot varchar(30),
+parking_amount double,
+parking_type varchar(30));
+
+create table complaints(resident_id varchar(20),
+complaints varchar(500),
+complaint_date varchar(30));
+
+
+create table paybill(billing_id int primary key,
+parking_id varchar(30),
+paid_month varchar(10),
+paid_year varchar(10),
+amount double,
+paid_date varchar(30),
+payment_mode varchar(30),
+card_details varchar(140));
