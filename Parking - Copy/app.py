@@ -7,6 +7,29 @@ flask_app = Flask(__name__)
 flask_app.secret_key = 'parking'
 global uname, details
 
+# ---------------------------------------------------------------------------
+# Database connection helper
+# Reads connection details from environment variables provided by Railway's
+# MySQL service.  Falls back to the original local-dev defaults so the app
+# still works when run on a developer's machine without any env vars set.
+# ---------------------------------------------------------------------------
+MYSQL_HOST     = os.environ.get('MYSQL_HOST',     '127.0.0.1')
+MYSQL_PORT     = int(os.environ.get('MYSQL_PORT', 3306))
+MYSQL_USER     = os.environ.get('MYSQL_USER',     'root')
+MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'root')
+MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'parking')
+
+def get_db_connection():
+    return pymysql.connect(
+        host=MYSQL_HOST,
+        port=MYSQL_PORT,
+        user=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        database=MYSQL_DATABASE,
+        charset='utf8',
+    )
+
+
 @flask_app.route('/UpdateResidentDetailsAction', methods=['GET', 'POST'])
 def UpdateResidentDetailsAction():
     if request.method == 'POST':
@@ -18,12 +41,12 @@ def UpdateResidentDetailsAction():
         email = request.form['t5']
         aadhar = request.form['t6']
         resident_id = request.form['rid']
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "delete from addresident where resident_id='"+resident_id+"'" 
         db_cursor.execute(query)
         db_connection.commit()
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO addresident(resident_id,floor_no,door_no,resident_name,contact_no,email,aadhar_card,status) VALUES('"+str(resident_id)+"','"+floor+"','"+door+"','"+name+"','"+contact+"','"+email+"','"+aadhar+"','Current Resident')"
         db_cursor.execute(query)
@@ -40,7 +63,7 @@ def UpdateResidentDetailsAction():
 def DeleteAdminResident():
     if request.method == 'GET':
         rid = request.args.get('rid')
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "delete from addresident where resident_id='"+rid+"'" 
         db_cursor.execute(query)
@@ -56,7 +79,7 @@ def UpdateAdminResident():
         rid = request.args.get('rid')
         font = '<font size="" color="black">'
         details = '<form name ="f1" method="post" action="/UpdateResidentDetailsAction" onsubmit="return validate(this);"><table align="center" width=30%>'
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addresident where resident_id='"+rid+"'")
@@ -82,7 +105,7 @@ def UpdateResidentDetails():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addresident")
@@ -140,7 +163,7 @@ def SearchResidentAdminAction():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addresident where "+column+" like '%"+query+"%'")
@@ -181,7 +204,7 @@ def LogoutPage():
 def isUserExists(table, username, password):
     is_user_exists = False
     global details
-    mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+    mysql_connect = get_db_connection()
     with mysql_connect:
         cursor = mysql_connect.cursor()
         cursor.execute("select * from "+table+" where username='"+username+"' and password='"+password+"'")
@@ -216,7 +239,7 @@ def AddResidentAction():
         email = request.form['t5']
         aadhar = request.form['t6']
         resident_id = 0
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select max(resident_id) from addresident")
@@ -227,7 +250,7 @@ def AddResidentAction():
             resident_id = 1
         else:
             resident_id = resident_id + 1
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO addresident(resident_id,floor_no,door_no,resident_name,contact_no,email,aadhar_card,status) VALUES('"+str(resident_id)+"','"+floor+"','"+door+"','"+name+"','"+contact+"','"+email+"','"+aadhar+"','Current Resident')"
         db_cursor.execute(query)
@@ -248,7 +271,7 @@ def AdminProfileUpdateAction():
         mobile_no = request.form['t3']
         email = request.form['t5']
         address = request.form['t6']
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "update admin set password='"+password+"', contact_no='"+mobile_no+"', email='"+email+"', address='"+address+"' where username='"+uname+"'" 
         db_cursor.execute(query)
@@ -265,7 +288,7 @@ def AdminProfileUpdateAction():
 @flask_app.route('/AddVehicle', methods=['GET', 'POST'])
 def AddVehicle():
     data = '<tr><td><font size="" color="black">Resident&nbsp;ID</b></td><td><select name="t1">'
-    mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+    mysql_connect = get_db_connection()
     with mysql_connect:
         cursor = mysql_connect.cursor()
         cursor.execute("select resident_id from addresident")
@@ -288,7 +311,7 @@ def AddVehicleAction():
         vehicle_name = request.form['t3']
         vehicle_model = request.form['t4']
         vehicle_id = 0
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select max(vehicle_id) from addvehicle")
@@ -299,7 +322,7 @@ def AddVehicleAction():
             vehicle_id = 1
         else:
             vehicle_id = vehicle_id + 1
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO addvehicle(vehicle_id,resident_id,vehicle_no,vehicle_name,vehicle_model) VALUES('"+str(vehicle_id)+"','"+str(resident_id)+"','"+vehicle_no+"','"+vehicle_name+"','"+vehicle_model+"')"
         db_cursor.execute(query)
@@ -320,7 +343,7 @@ def UpdateVehicleDetails():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addvehicle")
@@ -345,12 +368,12 @@ def UpdateAdminVehicleAction():
         model = request.form['t4']
         vid = request.form['vid']
         
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "delete from addvehicle where vehicle_id='"+vid+"'" 
         db_cursor.execute(query)
         db_connection.commit()
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO addvehicle(vehicle_id,resident_id,vehicle_no,vehicle_name,vehicle_model) VALUES('"+str(vid)+"','"+str(rid)+"','"+vehicle_no+"','"+name+"','"+model+"')"
         db_cursor.execute(query)
@@ -367,7 +390,7 @@ def UpdateAdminVehicleAction():
 def DeleteAdminVehicle():
     if request.method == 'GET':
         rid = request.args.get('vid')
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "delete from addvehicle where vehicle_id='"+rid+"'" 
         db_cursor.execute(query)
@@ -383,7 +406,7 @@ def UpdateAdminVehicle():
         rid = request.args.get('vid')
         font = '<font size="" color="black">'
         details = '<form name ="f1" method="post" action="/UpdateAdminVehicleAction" onsubmit="return validate(this);"><table align="center" width=30%>'
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addvehicle where vehicle_id='"+rid+"'")
@@ -413,7 +436,7 @@ def SearchVehicleAdminAction():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addvehicle where "+column+" like '%"+query+"%'")
@@ -432,7 +455,7 @@ def SearchVehicleAdminAction():
 def isParkingExists(slot):
     is_parking_exists = False
     global details
-    mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+    mysql_connect = get_db_connection()
     with mysql_connect:
         cursor = mysql_connect.cursor()
         cursor.execute("select parking_slot from parkingslot where parking_slot='"+str(slot)+"'")
@@ -444,7 +467,7 @@ def isParkingExists(slot):
 def isVehicleAllocated(vehicle):
     is_parking_exists = False
     global details
-    mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+    mysql_connect = get_db_connection()
     with mysql_connect:
         cursor = mysql_connect.cursor()
         cursor.execute("select vehicle_no from parkingslot where vehicle_no='"+str(vehicle)+"'")
@@ -456,7 +479,7 @@ def isVehicleAllocated(vehicle):
 @flask_app.route('/AddParking', methods=['GET', 'POST'])
 def AddParking():
     data = '<tr><td><font size="" color="black">Resident&nbsp;ID&nbsp;Vehicle&nbsp;No</b></td><td><select name="t1">'
-    mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+    mysql_connect = get_db_connection()
     with mysql_connect:
         cursor = mysql_connect.cursor()
         cursor.execute("select resident_id, vehicle_no from addvehicle")
@@ -487,7 +510,7 @@ def AddParkingAction():
         resident_id = arr[0].strip()
         vehicle_no = arr[1].strip()
         parking_slot = 0
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select max(parking_id) from parkingslot")
@@ -498,7 +521,7 @@ def AddParkingAction():
             parking_slot = 1
         else:
             parking_slot = parking_slot + 1
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO parkingslot(parking_id,resident_id,vehicle_no,parking_slot,parking_amount,parking_type) VALUES('"+str(parking_slot)+"','"+str(resident_id)+"','"+vehicle_no+"','"+slot+"','"+amount+"','"+ptype+"')"
         db_cursor.execute(query)
@@ -519,7 +542,7 @@ def UpdateParkingDetails():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from parkingslot")
@@ -546,12 +569,12 @@ def UpdateAdminParkingAction():
         ptype = request.form['t5']
         pid = request.form['pid']
         
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "delete from parkingslot where parking_id='"+pid+"'" 
         db_cursor.execute(query)
         db_connection.commit()
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO parkingslot(parking_id, resident_id, vehicle_no, parking_slot, parking_amount,parking_type) VALUES('"+str(pid)+"','"+str(rid)+"','"+vehicle_no+"','"+slot+"','"+amount+"','"+ptype+"')"
         db_cursor.execute(query)
@@ -568,7 +591,7 @@ def UpdateAdminParkingAction():
 def DeleteAdminParking():
     if request.method == 'GET':
         rid = request.args.get('vid')
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "delete from parkingslot where parking_id='"+rid+"'" 
         db_cursor.execute(query)
@@ -584,7 +607,7 @@ def UpdateAdminParking():
         rid = request.args.get('vid')
         font = '<font size="" color="black">'
         details = '<form name ="f1" method="post" action="/UpdateAdminParkingAction" onsubmit="return validate(this);"><table align="center" width=30%>'
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from parkingslot where parking_id='"+rid+"'")
@@ -614,7 +637,7 @@ def SearchParkingAdminAction():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from parkingslot where "+column+" like '%"+query+"%'")
@@ -636,7 +659,7 @@ def Complaints():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from complaints")
@@ -650,7 +673,7 @@ def Complaints():
 @flask_app.route('/UpdateStatus', methods=['GET', 'POST'])
 def UpdateStatus():
     data = '<tr><td><font size="" color="black">Resident&nbsp;ID</b></td><td><select name="t1">'
-    mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+    mysql_connect = get_db_connection()
     with mysql_connect:
         cursor = mysql_connect.cursor()
         cursor.execute("select resident_id from addresident")
@@ -667,7 +690,7 @@ def UpdateStatusAction():
         rid = request.form['t1']
         status = request.form['t2']
         
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "update addresident set status='"+status+"' where resident_id='"+rid+"'" 
         db_cursor.execute(query)
@@ -683,7 +706,7 @@ def UpdateStatusAction():
 
 def checkPayment(pid, month, year):
     flag = False
-    mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+    mysql_connect = get_db_connection()
     with mysql_connect:
         cursor = mysql_connect.cursor()
         cursor.execute("select * from paybill where parking_id='"+pid+"' and paid_month='"+month+"' and paid_year='"+year+"'")
@@ -713,7 +736,7 @@ def PayBillAction():
         month = str(today.month)
         year = str(today.year)
         billing_no = 0
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select max(billing_id) from paybill")
@@ -724,7 +747,7 @@ def PayBillAction():
             billing_no = 1
         else:
             billing_no = billing_no + 1
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO paybill(billing_id,parking_id,paid_month,paid_year,amount,paid_date,payment_mode,card_details) VALUES('"+str(billing_no)+"','"+str(pid)+"','"+month+"','"+year+"','"+amount+"','"+str(today)+"','"+mode+"','"+card+"')"
         db_cursor.execute(query)
@@ -749,7 +772,7 @@ def Charges():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from parkingslot")
@@ -778,7 +801,7 @@ def ResidentLoginAction():
         name = None
         user = request.form['t1']
         status = False
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select resident_id, resident_name from addresident where resident_id='"+str(user)+"'")
@@ -797,7 +820,7 @@ def ResidentLoginAction():
 def ResidentProfileUpdate():
     if request.method == 'GET':
         global uname
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addresident where resident_id='"+str(uname)+"'")
@@ -824,7 +847,7 @@ def ResidentProfileUpdateAction():
         contact = request.form['t5']
         email = request.form['t6']
         aadhar = request.form['t7']
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "update addresident set resident_name='"+name+"', contact_no='"+contact+"', email='"+email+"', aadhar_card='"+aadhar+"' where resident_id='"+rid+"'" 
         db_cursor.execute(query)
@@ -853,7 +876,7 @@ def ResidentAddVehicleAction():
         vehicle_name = request.form['t3']
         vehicle_model = request.form['t4']
         vehicle_id = 0
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select max(vehicle_id) from addvehicle")
@@ -864,7 +887,7 @@ def ResidentAddVehicleAction():
             vehicle_id = 1
         else:
             vehicle_id = vehicle_id + 1
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO addvehicle(vehicle_id,resident_id,vehicle_no,vehicle_name,vehicle_model) VALUES('"+str(vehicle_id)+"','"+str(resident_id)+"','"+vehicle_no+"','"+vehicle_name+"','"+vehicle_model+"')"
         db_cursor.execute(query)
@@ -886,7 +909,7 @@ def ResidentUpdateVehicle():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addvehicle where resident_id='"+uname+"'")
@@ -911,12 +934,12 @@ def UpdateResidentVehicleAction():
         model = request.form['t4']
         vid = request.form['vid']
         
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "delete from addvehicle where vehicle_id='"+vid+"'" 
         db_cursor.execute(query)
         db_connection.commit()
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO addvehicle(vehicle_id,resident_id,vehicle_no,vehicle_name,vehicle_model) VALUES('"+str(vid)+"','"+str(rid)+"','"+vehicle_no+"','"+name+"','"+model+"')"
         db_cursor.execute(query)
@@ -933,7 +956,7 @@ def UpdateResidentVehicleAction():
 def DeleteResidentVehicle():
     if request.method == 'GET':
         rid = request.args.get('vid')
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "delete from addvehicle where vehicle_id='"+rid+"'" 
         db_cursor.execute(query)
@@ -949,7 +972,7 @@ def UpdateResidentVehicle():
         rid = request.args.get('vid')
         font = '<font size="" color="black">'
         details = '<form name ="f1" method="post" action="/UpdateResidentVehicleAction" onsubmit="return validate(this);"><table align="center" width=30%>'
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from addvehicle where vehicle_id='"+rid+"'")
@@ -979,7 +1002,7 @@ def ResidentComplaintsAction():
         complaint = request.form['t2']
         today = datetime.now()
         
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO complaints(resident_id,complaints,complaint_date) VALUES('"+str(rid)+"','"+str(complaint)+"','"+str(today)+"')"
         db_cursor.execute(query)
@@ -1012,7 +1035,7 @@ def ResidentPayBillAction():
         month = str(today.month)
         year = str(today.year)
         billing_no = 0
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select max(billing_id) from paybill")
@@ -1023,7 +1046,7 @@ def ResidentPayBillAction():
             billing_no = 1
         else:
             billing_no = billing_no + 1
-        db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        db_connection = get_db_connection()
         db_cursor = db_connection.cursor()
         query = "INSERT INTO paybill(billing_id,parking_id,paid_month,paid_year,amount,paid_date,payment_mode,card_details) VALUES('"+str(billing_no)+"','"+str(pid)+"','"+month+"','"+year+"','"+amount+"','"+str(today)+"','"+mode+"','"+card+"')"
         db_cursor.execute(query)
@@ -1049,7 +1072,7 @@ def ResidentCharges():
         data += "<tr>"
         for i in range(len(metrics)):
             data += "<th>"+font+metrics[i]+"</th>"
-        mysql_connect = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'parking',charset='utf8')
+        mysql_connect = get_db_connection()
         with mysql_connect:
             cursor = mysql_connect.cursor()
             cursor.execute("select * from parkingslot where resident_id='"+uname+"'")
@@ -1070,7 +1093,8 @@ def ResidentCharges():
         
 
 if __name__ == '__main__':
-    flask_app.run(host='localhost', port=7000)
+    flask_app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 7000)))
+
 
 
 
